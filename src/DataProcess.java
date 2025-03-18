@@ -1,4 +1,4 @@
-//Logic class
+package src;//Logic class
 
 import java.io.IOException;
 import java.nio.file.Files;
