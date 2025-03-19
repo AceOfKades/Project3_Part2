@@ -15,16 +15,15 @@ public class TablePanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 1000);
 
+
         // Column Names
         String[] columnNames = {"ID", "Name", "Age", "Country", "Product Category", "Purchase Amount", "Payment Method", "Transaction Date"};
 
         // Table Model (Dynamic Data)
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
         JTable table = new JTable(model); // JTable with data model
-
-        // 🔹 Wrap JTable inside JScrollPane (FIX)
-        JScrollPane scrollPane = new JScrollPane(table);
-        frame.add(scrollPane, BorderLayout.CENTER); // Add scrollPane to JFrame
+        JScrollPane scrollPane = new JScrollPane(table); //holds table
+        JPanel panel = new JPanel(); //for holding filters
 
         // Add Sample Data
         addData(model);
@@ -69,18 +68,31 @@ public class TablePanel {
         sorter.setComparator(7, dateComparator);
 
 
+        //Set default to sort by ID (Ascending)
         ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING)); //Sort by ID, Ascending, at default
+        sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
 
+        /*TO DO
+        Create toggleable filters for:
+        * [] Product Category
+        * [] Payment Method
+        * [] Name
+        * [] Country
+        * [] Year of Transaction*/
+
+        //add frame and panel elements
+        frame.add(scrollPane, BorderLayout.CENTER); // Add scrollPane to JFrame
+
+        //display frame
         frame.setVisible(true);
     }
 
     private static void addData(DefaultTableModel model) {
         ArrayList<ArrayList<String>> dataset = DataProcess.tokenizeArray(DataProcess.createArray());
 
-        for(ArrayList<String> x : dataset){
-            model.addRow(x.toArray());
+        for(ArrayList<String> dataLine : dataset){
+            model.addRow(dataLine.toArray());
         }
     }
 }
