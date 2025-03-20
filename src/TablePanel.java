@@ -73,6 +73,12 @@ public class TablePanel {
         // Attach event listeners to all filters
         filters.values().forEach(comboBox -> comboBox.addActionListener(filterAction));
 
+        //stats panel
+
+        //chart panel
+
+        //details panel
+
         // organize frame elements
         frame.setLayout(new BorderLayout());
         frame.add(filterPanel, BorderLayout.NORTH);
