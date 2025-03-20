@@ -1,5 +1,5 @@
 package src;
-//GUI class
+// GUI class
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -16,15 +16,13 @@ public class TablePanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1000, 1000);
 
-
         // Column Names
         String[] columnNames = {"ID", "Name", "Age", "Country", "Product Category", "Purchase Amount", "Payment Method", "Transaction Date"};
 
-        // Table Model (Dynamic Data)
+        // Table Model and JTable
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-        JTable table = new JTable(model); // JTable with data model
-        JScrollPane scrollPane = new JScrollPane(table); //holds table
-        JPanel panel = new JPanel(); //for holding filters
+        JTable table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
 
         // Add Sample Data
         addData(model);
@@ -33,119 +31,89 @@ public class TablePanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
 
-        //Create integer comparator for columns 0 (ID number) and 2 (Age)
-        Comparator<String> numericComparator = (str1, str2) -> {
-            Integer num1 = Integer.parseInt(str1);
-            Integer num2 = Integer.parseInt(str2);
-            return num1.compareTo(num2);
-        };
+        // Assign numeric comparators dynamically for column 0 (ID) and 2 (Age)
+        int[] numericColumns = {0, 2};
+        for (int col : numericColumns) sorter.setComparator(col, createComparator("int"));
+        // float comparator for column 5 (Purchase Amount)
+        sorter.setComparator(5, createComparator("float"));
+        // date comparator for column 7 (Transaction Date)
+        sorter.setComparator(7, createComparator("date"));
 
-        //Create float comparator for column 5 (Purchase Amount)
-        Comparator<String> floatComparator = (str1, str2) -> {
-            Float flo1 = Float.parseFloat(str1);
-            Float flo2 = Float.parseFloat(str2);
-            return flo1.compareTo(flo2);
-        };
+        // Default sorting by ID (Ascending)
+        sorter.setSortKeys(Collections.singletonList(new RowSorter.SortKey(0, SortOrder.ASCENDING)));
 
-        //create date formatting
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-        dateFormat.setLenient(false); //be strict about date parse
+        // Create filters dynamically
+        Map<String, Integer> filterColumns = new LinkedHashMap<>();
+        filterColumns.put(columnNames[3], 3); //country
+        filterColumns.put(columnNames[4], 4); //product category
+        filterColumns.put(columnNames[6], 6); //payment method
 
-        //Create date comparator for column 7 (Transaction date)
-        Comparator<String> dateComparator = (str1, str2) ->{
-            try {       //fiddly magic to keep parse happy (assumes an unhandled exception without the try statement
-                Date date1 = dateFormat.parse(str1);
-                Date date2 = dateFormat.parse(str2);
-                return date1.compareTo(date2);
-            } catch (ParseException e){
-                return 0; //keep original order if parse fails
-            }
-        };
-
-        //set sorters to comparators for columns
-        sorter.setComparator(0, numericComparator);
-        sorter.setComparator(2, numericComparator);
-        sorter.setComparator(5, floatComparator);
-        sorter.setComparator(7, dateComparator);
-
-
-        //Set default to sort by ID (Ascending)
-        ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
-        sorter.setSortKeys(sortKeys);
-        /*TO DO
-        Create toggleable filters for:
-        * [X] Product Category
-        * [X] Payment Method
-        * [] Country*/
-
-        //product category filter items
-        String[] productCategories = {"All", "Beauty", "Books", "Clothing", "Electronics", "Grocery", "Home & Kitchen", "Sports", "Toys"};
-        JComboBox<String> productFilter = new JComboBox<>(productCategories);
-        productFilter.setPreferredSize(new Dimension(120,25));
-
-        //payment category filter items
-        String[] paymentCategories = {"All", "Cash on Delivery", "Credit Card", "Debit Card", "Net Banking", "PayPal", "UPI"};
-        JComboBox<String> paymentFilter = new JComboBox<>(paymentCategories);
-        paymentFilter.setPreferredSize(new Dimension(100, 25));
-
-        //country category filter items
-        String[] countryCategories = {"All", "Australia", "Brazil", "Canada", "France", "Germany", "India", "Japan", "Mexico", "UK", "USA"};
-        JComboBox<String> countryFilter = new JComboBox<>(countryCategories);
-        countryFilter.setPreferredSize(new Dimension(100, 25));
-
-        // filtering logic
-        ActionListener filterAction = e -> {
-          ArrayList<RowFilter<Object, Object>> activeFilters = new ArrayList<>();
-
-          //product filter
-          String selectedProduct = (String) productFilter.getSelectedItem();
-          if(!"All".equals(selectedProduct)){
-              activeFilters.add(RowFilter.regexFilter(selectedProduct, 4));
-          }
-
-          //payment filter
-          String selectedPayment = (String) paymentFilter.getSelectedItem();
-          if(!"All".equals(selectedPayment)){
-              activeFilters.add(RowFilter.regexFilter(selectedPayment, 6));
-          }
-
-          String selectedCountry = (String) countryFilter.getSelectedItem();
-          if(!"All".equals(selectedCountry)){
-              activeFilters.add(RowFilter.regexFilter(selectedCountry, 3));
-          }
-
-          sorter.setRowFilter(activeFilters.isEmpty() ? null : RowFilter.andFilter(activeFilters));
-        };
-
-        //attach logic to combo boxes
-        productFilter.addActionListener(filterAction);
-        paymentFilter.addActionListener(filterAction);
-        countryFilter.addActionListener(filterAction);
-
-        //panel to hold filters
+        Map<String, JComboBox<String>> filters = new HashMap<>();
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        filterPanel.add(new JLabel("Product Category: "));
-        filterPanel.add(productFilter);
-        filterPanel.add(new JLabel("Payment Method: "));
-        filterPanel.add(paymentFilter);
-        filterPanel.add(new JLabel("Country: "));
-        filterPanel.add(countryFilter);
 
-        //organize frame elements
+        for (Map.Entry<String, Integer> entry : filterColumns.entrySet()) {
+            JComboBox<String> comboBox = createComboBoxFilter(entry.getKey());
+            filters.put(entry.getKey(), comboBox);
+            filterPanel.add(new JLabel(entry.getKey() + ": "));
+            filterPanel.add(comboBox);
+        }
+
+        // Filtering logic
+        ActionListener filterAction = e -> {
+            ArrayList<RowFilter<Object, Object>> activeFilters = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : filterColumns.entrySet()) {
+                String selectedValue = (String) filters.get(entry.getKey()).getSelectedItem();
+                if (!"All".equals(selectedValue)) {
+                    activeFilters.add(RowFilter.regexFilter(selectedValue, entry.getValue()));
+                }
+            }
+            sorter.setRowFilter(activeFilters.isEmpty() ? null : RowFilter.andFilter(activeFilters));
+        };
+
+        // Attach event listeners to all filters
+        filters.values().forEach(comboBox -> comboBox.addActionListener(filterAction));
+
+        // organize frame elements
         frame.setLayout(new BorderLayout());
         frame.add(filterPanel, BorderLayout.NORTH);
-        frame.add(scrollPane, BorderLayout.CENTER); // Add scrollPane to JFrame
-
-        //display frame
+        frame.add(scrollPane, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 
+    // Method to create JComboBox filter
+    private static JComboBox<String> createComboBoxFilter(String filterType) {
+        Map<String, String[]> filterOptions = new HashMap<>();
+        filterOptions.put("Product Category", new String[]{"All", "Beauty", "Books", "Clothing", "Electronics", "Grocery", "Home & Kitchen", "Sports", "Toys"});
+        filterOptions.put("Payment Method", new String[]{"All", "Cash on Delivery", "Credit Card", "Debit Card", "Net Banking", "PayPal", "UPI"});
+        filterOptions.put("Country", new String[]{"All", "Australia", "Brazil", "Canada", "France", "Germany", "India", "Japan", "Mexico", "UK", "USA"});
+
+        JComboBox<String> comboBox = new JComboBox<>(filterOptions.getOrDefault(filterType, new String[]{"All"}));
+        comboBox.setPreferredSize(new Dimension(120, 25));
+        return comboBox;
+    }
+
+    // Generic comparator for sorting different data types
+    private static Comparator<String> createComparator(String type) {
+        return switch (type) {
+            case "int" -> Comparator.comparingInt(Integer::parseInt);
+            case "float" -> Comparator.comparingDouble(Double::parseDouble);
+            case "date" -> {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+                yield (str1, str2) -> {
+                    try {
+                        return dateFormat.parse(str1).compareTo(dateFormat.parse(str2));
+                    } catch (ParseException e) {
+                        return 0;
+                    }
+                };
+            }
+            default -> String::compareTo;
+        };
+    }
+
+    // Loads dataset into the table
     private static void addData(DefaultTableModel model) {
         ArrayList<ArrayList<String>> dataset = DataProcess.tokenizeArray(DataProcess.createArray());
-
-        for(ArrayList<String> dataLine : dataset){
-            model.addRow(dataLine.toArray());
-        }
+        dataset.forEach(dataLine -> model.addRow(dataLine.toArray()));
     }
 }
