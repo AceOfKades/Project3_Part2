@@ -4,6 +4,7 @@ package src;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -72,16 +73,68 @@ public class TablePanel {
         ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
-
         /*TO DO
         Create toggleable filters for:
-        * [] Product Category
-        * [] Payment Method
-        * [] Name
-        * [] Country
-        * [] Year of Transaction*/
+        * [X] Product Category
+        * [X] Payment Method
+        * [] Country*/
 
-        //add frame and panel elements
+        //product category filter items
+        String[] productCategories = {"All", "Beauty", "Books", "Clothing", "Electronics", "Grocery", "Home & Kitchen", "Sports", "Toys"};
+        JComboBox<String> productFilter = new JComboBox<>(productCategories);
+        productFilter.setPreferredSize(new Dimension(120,25));
+
+        //payment category filter items
+        String[] paymentCategories = {"All", "Cash on Delivery", "Credit Card", "Debit Card", "Net Banking", "PayPal", "UPI"};
+        JComboBox<String> paymentFilter = new JComboBox<>(paymentCategories);
+        paymentFilter.setPreferredSize(new Dimension(100, 25));
+
+        //country category filter items
+        String[] countryCategories = {"All", "Australia", "Brazil", "Canada", "France", "Germany", "India", "Japan", "Mexico", "UK", "USA"};
+        JComboBox<String> countryFilter = new JComboBox<>(countryCategories);
+        countryFilter.setPreferredSize(new Dimension(100, 25));
+
+        // filtering logic
+        ActionListener filterAction = e -> {
+          ArrayList<RowFilter<Object, Object>> activeFilters = new ArrayList<>();
+
+          //product filter
+          String selectedProduct = (String) productFilter.getSelectedItem();
+          if(!"All".equals(selectedProduct)){
+              activeFilters.add(RowFilter.regexFilter(selectedProduct, 4));
+          }
+
+          //payment filter
+          String selectedPayment = (String) paymentFilter.getSelectedItem();
+          if(!"All".equals(selectedPayment)){
+              activeFilters.add(RowFilter.regexFilter(selectedPayment, 6));
+          }
+
+          String selectedCountry = (String) countryFilter.getSelectedItem();
+          if(!"All".equals(selectedCountry)){
+              activeFilters.add(RowFilter.regexFilter(selectedCountry, 3));
+          }
+
+          sorter.setRowFilter(activeFilters.isEmpty() ? null : RowFilter.andFilter(activeFilters));
+        };
+
+        //attach logic to combo boxes
+        productFilter.addActionListener(filterAction);
+        paymentFilter.addActionListener(filterAction);
+        countryFilter.addActionListener(filterAction);
+
+        //panel to hold filters
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        filterPanel.add(new JLabel("Product Category: "));
+        filterPanel.add(productFilter);
+        filterPanel.add(new JLabel("Payment Method: "));
+        filterPanel.add(paymentFilter);
+        filterPanel.add(new JLabel("Country: "));
+        filterPanel.add(countryFilter);
+
+        //organize frame elements
+        frame.setLayout(new BorderLayout());
+        frame.add(filterPanel, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER); // Add scrollPane to JFrame
 
         //display frame
