@@ -5,6 +5,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -78,11 +80,31 @@ public class TablePanel {
         //chart panel
 
         //details panel
+        JTextArea detailsTextArea = new JTextArea(9, 20);
+        detailsTextArea.setEditable(false);
+
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int row = table.getSelectedRow();
+                if (row != -1) {
+                    StringBuilder details = new StringBuilder();
+                    for (int i = 0; i < table.getColumnCount(); i++) {
+                        details.append(table.getColumnName(i)).append(": ")
+                                .append(table.getValueAt(row, i)).append("\n");
+                    }
+                    detailsTextArea.setText(details.toString());
+                }
+            }
+        });
 
         // organize frame elements
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(detailsTextArea, BorderLayout.NORTH);
+
         frame.setLayout(new BorderLayout());
         frame.add(filterPanel, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
+        frame.add(rightPanel, BorderLayout.EAST);
         frame.setVisible(true);
     }
 
