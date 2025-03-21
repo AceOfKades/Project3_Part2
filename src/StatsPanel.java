@@ -2,22 +2,21 @@ package src;
 
 import javax.swing.*;
 import javax.swing.table.*;
-import java.awt.*;
 
 //average amount spent
 //number of transactions
 //average age
 
-public class StatsTable extends JPanel {
+public class StatsPanel extends JPanel {
     private JLabel totalTransactionsLabel, avgAmountLabel, avgAgeLabel;
     private JTable table;
 
-    public StatsTable(JTable table) {
+    public StatsPanel(JTable table) {
         this.table = table;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         totalTransactionsLabel = new JLabel("Total Transactions: 0");
-        avgAmountLabel = new JLabel("Average Amount: 0.0");
+        avgAmountLabel = new JLabel("Average Spent: 0.0");
         avgAgeLabel = new JLabel("Average Age: 0");
 
         add(totalTransactionsLabel);

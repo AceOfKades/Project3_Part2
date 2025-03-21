@@ -13,10 +13,12 @@ import java.text.ParseException;
 
 public class TablePanel {
 
+    private static ChartPanel chartPanel;  // Reference to the ChartPanel
+
     public static void displayTable() {
         JFrame frame = new JFrame("E-Commerce Transactions Dataset");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 1000);
+        frame.setSize(1500, 1000);
 
         // Column Names
         String[] columnNames = {"ID", "Name", "Age", "Country", "Product Category", "Purchase Amount", "Payment Method", "Transaction Date"};
@@ -29,7 +31,7 @@ public class TablePanel {
         // Add Sample Data
         addData(model);
 
-        //Set up Sorting
+        // Set up Sorting
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
 
@@ -70,17 +72,21 @@ public class TablePanel {
                 }
             }
             sorter.setRowFilter(activeFilters.isEmpty() ? null : RowFilter.andFilter(activeFilters));
+
+            // Update the chart after applying the filter
+            chartPanel.updateChart();
         };
 
         // Attach event listeners to all filters
         filters.values().forEach(comboBox -> comboBox.addActionListener(filterAction));
 
-        //stats panel
-        StatsTable statPanel = new StatsTable(table);
+        // Stats panel
+        StatsPanel statPanel = new StatsPanel(table);
 
-        //chart panel
+        // Chart panel - passing table reference to ChartPanel
+        chartPanel = new ChartPanel(table);
 
-        //details panel
+        // Details panel
         JTextArea detailsTextArea = new JTextArea(9, 20);
         detailsTextArea.setEditable(false);
 
@@ -98,10 +104,11 @@ public class TablePanel {
             }
         });
 
-        // organize frame elements
+        // Organize frame elements
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(detailsTextArea, BorderLayout.NORTH);
         rightPanel.add(statPanel, BorderLayout.CENTER);
+        rightPanel.add(chartPanel, BorderLayout.SOUTH);
 
         frame.setLayout(new BorderLayout());
         frame.add(filterPanel, BorderLayout.NORTH);
