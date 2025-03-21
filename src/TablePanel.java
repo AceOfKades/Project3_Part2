@@ -76,6 +76,7 @@ public class TablePanel {
         filters.values().forEach(comboBox -> comboBox.addActionListener(filterAction));
 
         //stats panel
+        StatsTable statPanel = new StatsTable(table);
 
         //chart panel
 
@@ -100,6 +101,7 @@ public class TablePanel {
         // organize frame elements
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(detailsTextArea, BorderLayout.NORTH);
+        rightPanel.add(statPanel, BorderLayout.CENTER);
 
         frame.setLayout(new BorderLayout());
         frame.add(filterPanel, BorderLayout.NORTH);
